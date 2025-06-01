@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from PIL import Image
 from io import BytesIO
 from ultralytics import YOLO
+import os
 
 app = FastAPI()
 
@@ -15,8 +16,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Load YOLOv8 model
-model = YOLO("yolov8n.pt")  # or another path if needed
+model_path = "models/yolov8n.pt"
+if not os.path.exists(model_path):
+    from urllib.request import urlretrieve
+    urlretrieve("https://github.com/ultralytics/assets/releases/download/v8.0.0/yolov8n.pt", model_path)
+
+model = YOLO(model_path)
+
 
 @app.post("/detect")
 async def detect_object(file: UploadFile = File(...), target: str = Form(...)):
